@@ -36,3 +36,10 @@ devtmpfs                                   470M   52K  470M   1% /dev
 tmpfs                                      480M     0  480M   0% /dev/shm
 /dev/nvme0n1p1                              16G  7.7G  7.9G  50% /
 ```
+
+
+
+
+
+
+https://stackoverflow.com/questions/52508038/how-to-increase-aws-ebs-nvme-size
