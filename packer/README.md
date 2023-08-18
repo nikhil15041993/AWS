@@ -120,3 +120,44 @@ build {
 ```
 
 
+
+##  packer output ami id to terraform variables automatically
+
+First, create a file called ami.tf.template:
+```
+# "ami.tf" was automatically generated from the template "ami.tf.template".
+variable "ami" {
+  default     = "${AMI_GENERATED_BY_PACKER}"
+  description = "The latest AMI."
+}
+```
+This template will be used to create the ami.tf file, which makes the AMI from packer available to your existing Terraform setup.
+
+Second, create a shell wrapper script for running packer. You can use the following ideas:
+
+```
+# run packer (prints to stdout, but stores the output in a variable)
+packer_out=$(packer build packer.json | tee /dev/tty)
+
+# packer prints the id of the generated AMI in its last line
+ami=$(echo "$packer_out" | tail -c 30 | perl -n -e'/: (ami-.+)$/ && print $1')
+
+# create the 'ami.tf' file from the template:
+export AMI_GENERATED_BY_PACKER="$ami" && envsubst < ami.tf.template > ami.tf
+```
+
+Once the script is done, it has created an ami.tf file, which may look like this:
+```
+# "ami.tf" was automatically generated from the template "ami.tf.template".
+variable "ami" {
+  default     = "ami-aa92a441"
+  description = "The latest AMI."
+}
+```
+Finally, put that file next to your existing Terraform setup. Then you can then access the AMI like this:
+```
+resource "aws_launch_configuration" "foo" {
+  image_id = "${var.ami}"
+  ...
+}
+```
