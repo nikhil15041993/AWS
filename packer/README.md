@@ -75,3 +75,48 @@ The AMI is created using packer.
 This will provision the AMI in you AWS account.
 
 Now, you can use the AMI to launch an EC2 instance which will have the web application pre configured and ready to use.
+
+
+
+## Failed to connect to the host via SSH on Ubuntu 22.04 
+
+In my case I was trying to build an AWS EC2 image via packer and the ansible provisioner, and I had this error:
+```
+amazon-ebs.aws: Failed to connect to the host via ssh: Unable to negotiate with 127.0.0.1 port
+amazon-ebs.aws: 40015: no matching host key type found. Their offer: ssh-rsa
+```
+
+The proposed solution is to add this snippet to either your /etc/ssh/ssh_config or ~/.ssh/config:
+```
+PubkeyAcceptedKeyTypes +ssh-rsa
+```
+or just for some specific hosts:
+```
+Host host.example.com
+    PubkeyAcceptedKeyTypes +ssh-rsa
+```
+In the case of ansible connecting to a host, or packer launching ansible connecting to a host, this needs an additional step or two.
+
+For ansible:
+```
+ansible --ssh-extra-args="-o PubkeyAcceptedKeyTypes=+ssh-rsa"
+```
+For packer with ansible provisioning:
+```
+build {
+  sources = ["sources.amazon-ebs.aws"]
+  provisioner "ansible" {
+    ansible_env_vars = [
+      ...
+      "ANSIBLE_SSH_ARGS='-o PubkeyAcceptedKeyTypes=+ssh-rsa -o HostkeyAlgorithms=+ssh-rsa'"
+    ]
+    playbook_file       = "..."
+    galaxy_file         = "..."
+    ...
+    extra_arguments     = "${concat(local.default_ansible_extra_args, var.ansible_extra_args)}"
+  }
+}
+
+```
+
+
