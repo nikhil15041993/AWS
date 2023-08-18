@@ -51,7 +51,7 @@ The project is built using,
    ```
    git clone https://github.com/nikhil15041993/AWS.git
    ```
-   move to packer directory
+   move to packer directory.
 2. [Install Packer](https://www.packer.io/docs/install)
 3. [Install Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 
